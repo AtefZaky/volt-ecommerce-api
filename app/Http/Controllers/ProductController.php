@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\ProductReview;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -84,17 +85,19 @@ class ProductController extends Controller
      */
     public function addToCart(Product $product, Request $request)
     {
-        $user_id = auth() -> user();
-        $user = DB::table('users')->where('id', $user_id)->first();
+        $user_id = auth() -> id();
+        $user = User::find($user_id);
         $formField = $request ->validate([
             'quantity' => 'required'
         ]);
-        CartItem::create([
-            'cart_id' => $user -> cart() -> id,
-            'product_id' => $product -> id,
-            'quantity' => $request -> quantity
-        ]);
-        return response('product added successfuly', 201);
+        for ($q = 0; $q < $request -> quantity ; $q++) {
+            CartItem::create([
+                'cart_id' => $user -> cart() -> first() -> id,
+                'product_id' => $product -> id,
+                'quantity' => 1,
+            ]);
+        }
+        return response('item added succssfully', 201);
     }
     /**
      * 
@@ -103,16 +106,16 @@ class ProductController extends Controller
     
     public function removeFromCart(Product $product, Request $request)
     {
-        $user_id = auth() -> user();
-        $user = DB::table('users')->where('id', $user_id)->first();
+        $user_id = auth() -> id();
+        $user = User::find($user_id);
         $formField = $request ->validate([
             'quantity' => 'required'
         ]);
         for ($q = 0; $q < $request -> quantity ; $q++) {
-            $cartItem = DB::table('cart_items')->where('cart_id', $user->cart()->id)->andwhere('product_id', $product->id)->first();
+            $cartItem = $user -> cart() -> first() -> cartItems() -> where('product_id', $product -> id) -> first();
             $cartItem -> delete();
         }
-        return response('item removed successfuly', 201);
+        return response($cartItem, 201);
     }
 
     // Reviews controllers
@@ -126,13 +129,13 @@ class ProductController extends Controller
     public function showReviews(Product $product, Request $request)
     {
         $product_id = $product -> id;
-        $reviews = ProductReview::latest()->where('product_id', $product_id);
+        $reviews = ProductReview::latest()->where('product_id', $product_id)->get();
         return response() ->json(['reviews' => $reviews]);
     }
 
     public function storeReview(Product $product, Request $request)
     {
-        $user_id = auth() -> user();
+        $user_id = auth() -> id();
         $product_id = $product -> id;
         $request -> validate([
             'rating' => 'required',

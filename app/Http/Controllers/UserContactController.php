@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\UserContact;
 use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +15,7 @@ class UserContactController extends Controller
      */
     public function store(Request $request)
     {
-        $user_id = auth()-> user();
+        $user_id = auth()-> id();
         $request ->validate([
             'country' => 'required',
             'city' => 'required',
@@ -38,10 +39,9 @@ class UserContactController extends Controller
     /**
      * Display the specified resource.
      */
-    public function index()
+    public function show(User $user)
     {
-        $user_id = auth()-> user();
-        $contact = DB::table('user_contacts')->where('user_id', $user_id)->first();
-        return response() -> json(['contact' => $contact]);
+        $contact = $user->userContact()->first();
+        return response() -> json(['contact',$contact]);
     }
 }

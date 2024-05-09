@@ -35,11 +35,10 @@ class RegisteredUserController extends Controller
         ]);
 
         event(new Registered($user));
-
+        $cart = Cart::create([
+            'user_id' => $user -> id
+        ]);
         if ($request -> cart ?? false) {
-            $cart = Cart::create([
-                'user' => $user -> id
-            ]);
             $cartIt = $request -> cart;
             foreach($cartIt as $item){
                 CartItem::create([

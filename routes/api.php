@@ -36,13 +36,13 @@ Route::post('/cart/remove/{product}', [ProductController::class, 'removeFromCart
 
 // Products reviews
 
-Route::get('product/review', [ProductController::class, 'indexReviews']);
-Route::get('product/review/{product}', [ProductController::class, 'showReviews']);
-Route::post('product/review/{product}', [ProductController::class, 'storeReview'])->middleware('auth');
+Route::get('/review', [ProductController::class, 'indexReviews']);
+Route::get('/review/{product}', [ProductController::class, 'showReviews']);
+Route::post('/review/{product}', [ProductController::class, 'storeReview'])->middleware('auth');
 
 // User contacts routes
 
-Route::get('/user/contact', [UserContactController::class, 'index']);
+Route::get('/user/contact/{user}', [UserContactController::class, 'show']);
 Route::post('/user/contact', [UserContactController::class, 'store'])->middleware('auth');
 
 // orders

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Http\Controllers\Controller;
 use App\Models\OrderLine;
+use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -24,22 +26,28 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $user_id = auth() -> user();
-        $user = DB::table('user')->where('user_id', $user_id)->first();
-        $total_price = $user ->cart()->cartItems()->sum('price');
+        $user_id = auth() -> id();
+        $user = User::find($user_id);
+        $items = $user ->cart()->first()->cartItems()->get();
+        $total_price = 0;
+        foreach($items as $i){
+            $price = Product::where('id', $i -> product_id)->first()->price;
+            $total_price = $total_price + $price;
+        }
         $order = Order::create([
             'user_id' => $user_id,
             'total_price' => $total_price,
+            'status' => 'pending'
         ]);
-        foreach ($user->cart()->cartItems() as $i) {
+        foreach ($user->cart()->first()->cartItems()->get() as $i) {
             OrderLine::create([
-               'order_id' => $order -> id,
-               'product_id' => $i -> product_id,
-               'price' => $i -> price
+                'order_id' => $order -> id,
+                'product_id' => $i -> product_id,
+                'quantity' => 1
             ]);
             $i -> delete();
         }
-        return response('order created succssufuly', 201);
+        return response('order made succssfully', 201);
     }
 
     /**
@@ -47,7 +55,7 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
-        $data = [['order', $order], ['user',$order->user()], ['user_contacts',$order->user()->userContact()]];
+        $data = [['order', $order] , ['user',$order->user()->first()],['user_contacts',$order->user()->first()->userContact()->first()]];
         return response() -> json($data, 200);
     }
 
