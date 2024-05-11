@@ -17,7 +17,7 @@ class OrderController extends Controller
      */
     public function index()
     {
-        $orders = Order::all();
+        $orders = Order::latest()->paginate(8);
         return response()->json([['orders', $orders]]);
     }
 
@@ -32,7 +32,7 @@ class OrderController extends Controller
         $total_price = 0;
         foreach($items as $i){
             $price = Product::where('id', $i -> product_id)->first()->price;
-            $total_price = $total_price + $price;
+            $total_price = $total_price + $price * $i->quantity;
         }
         $order = Order::create([
             'user_id' => $user_id,
@@ -43,7 +43,7 @@ class OrderController extends Controller
             OrderLine::create([
                 'order_id' => $order -> id,
                 'product_id' => $i -> product_id,
-                'quantity' => 1
+                'quantity' => $i -> quantity
             ]);
             $i -> delete();
         }

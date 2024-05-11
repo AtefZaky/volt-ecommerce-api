@@ -35,18 +35,27 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
+        return response($request->file('picture'));
         $formField = $request ->validate([
             'title' => 'required',
             'description' => 'required',
             'price' => 'required',
             'category_id' => 'required',
         ]);
-
-        $formFields['picture'] = $request->file('picture')->store('products', 'public');
         
-        Product::create($formField);
+        $formFields['picture'] = $request->file('picture');
+        // ->store('products', 'public');
         
-        return response('product created successfuly', 201);
+        return response('product created succssfully', 201);
+        
+        Product::create([
+            'title' => request()->title,
+            'description' => request()->description,
+            'price' => request()->price,
+            'category_id' => request()->category_id,
+            'picture' => $formFields['picture'],
+        ]);
+        
     }
     
     
@@ -64,11 +73,15 @@ class ProductController extends Controller
             'category_id' => 'required',
         ]);
 
-        $formFields['picture'] = $request->file('picture')->store('products', 'public');
+        if (request()->file('picture')){
+            $formFields['picture'] = $request->file('picture')->store('products', 'public');
+        } else{
+            $formFields['picture'] = $product -> picture;
+        }
         
         $product->update($formFields);
         
-        return response('product updated successfuly', 200);
+        return response('product updated successfuly', 201);
     }
     
     /**
@@ -90,13 +103,31 @@ class ProductController extends Controller
         $formField = $request ->validate([
             'quantity' => 'required'
         ]);
-        for ($q = 0; $q < $request -> quantity ; $q++) {
+        $cart = $user -> cart() -> first() -> id;
+        if ($cart->cartItems()->get() ?? false){
+            foreach($cart->cartItems()->get() as $i){
+                if ($i -> product_id == $product->id){
+                    $i -> update([
+                        'cart_id' => $i->cart_id,
+                        'product_id' => $i->product_id,
+                        'quantity' => $i->quantity + request()->quantity,
+                    ]);
+                }
+            }
+        } else{
             CartItem::create([
-                'cart_id' => $user -> cart() -> first() -> id,
-                'product_id' => $product -> id,
-                'quantity' => 1,
-            ]);
+                    'cart_id' => $user -> cart() -> first() -> id,
+                    'product_id' => $product -> id,
+                    'quantity' => request()->quantity,
+                ]);
         }
+        // for ($q = 0; $q < $request -> quantity ; $q++) {
+        //     CartItem::create([
+        //         'cart_id' => $user -> cart() -> first() -> id,
+        //         'product_id' => $product -> id,
+        //         'quantity' => 1,
+        //     ]);
+        // }
         return response('item added succssfully', 201);
     }
     /**
@@ -111,11 +142,24 @@ class ProductController extends Controller
         $formField = $request ->validate([
             'quantity' => 'required'
         ]);
-        for ($q = 0; $q < $request -> quantity ; $q++) {
-            $cartItem = $user -> cart() -> first() -> cartItems() -> where('product_id', $product -> id) -> first();
-            $cartItem -> delete();
+        $cart = $user -> cart() -> first() -> id;
+        foreach($cart->cartItems()->get() as $i){
+            if ($i -> product_id == $product->id){
+                if ($i-> quantity == request()->quantity){
+                    $i -> delete();
+                }
+                $i -> update([
+                    'cart_id' => $i->cart_id,
+                    'product_id' => $i->product_id,
+                    'quantity' => $i->quantity - request()->quantity,
+                ]);
+            }
         }
-        return response($cartItem, 201);
+        // for ($q = 0; $q < $request -> quantity ; $q++) {
+        //     $cartItem = $user -> cart() -> first() -> cartItems() -> where('product_id', $product -> id) -> first();
+        //     $cartItem -> delete();
+        // }
+        return response('item removed succssfully', 201);
     }
 
     // Reviews controllers
