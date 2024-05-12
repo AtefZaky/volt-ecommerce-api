@@ -35,27 +35,32 @@ class ProductController extends Controller
      */
     public function store(Request $request)
     {
-        return response($request->file('picture'));
         $formField = $request ->validate([
             'title' => 'required',
             'description' => 'required',
             'price' => 'required',
             'category_id' => 'required',
+            'picture' => 'required',
         ]);
         
-        $formFields['picture'] = $request->file('picture');
-        // ->store('products', 'public');
-        
-        return response('product created succssfully', 201);
         
         Product::create([
-            'title' => request()->title,
-            'description' => request()->description,
-            'price' => request()->price,
-            'category_id' => request()->category_id,
-            'picture' => $formFields['picture'],
+            'title' => $request->title,
+            'description' => $request->description,
+            'price' => $request->price,
+            'category_id' => $request->category_id,
+            'picture' => $request->picture,
         ]);
         
+        return response('product created succssfully', 201);
+    }
+
+    public function storeImage(Request $request){
+        $request -> validate([
+            'image' => 'required'
+        ]);
+        $pic = $request -> file('image') -> store('products', 'public');
+        return response()->json(['image' => 'http://localhost:8000/storage/'.$pic]);
     }
     
     
@@ -64,20 +69,13 @@ class ProductController extends Controller
      */
     public function update(Request $request, Product $product)
     {
-        //
         $formFields= $request -> validate([
             'title' => 'required',
             'description' => 'required',
             'price' => 'required',
-            'status' => 'required',
             'category_id' => 'required',
+            'picture' => 'required'
         ]);
-
-        if (request()->file('picture')){
-            $formFields['picture'] = $request->file('picture')->store('products', 'public');
-        } else{
-            $formFields['picture'] = $product -> picture;
-        }
         
         $product->update($formFields);
         

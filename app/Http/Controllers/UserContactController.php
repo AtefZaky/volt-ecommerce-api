@@ -16,12 +16,14 @@ class UserContactController extends Controller
     public function store(Request $request)
     {
         $user_id = auth()-> id();
+        $user = User::find($user_id);
         $request ->validate([
             'country' => 'required',
             'city' => 'required',
             'address' => 'required',
             'postal_code' => 'required',
             'phone_number' => 'required',
+            'image' => 'required',
         ]);
 
         UserContact::create([
@@ -32,8 +34,23 @@ class UserContactController extends Controller
             'postal_code' => $request -> postal_code,
             'phone_number' => $request -> phone_number,
         ]);
+
+        $user -> update([
+            'image' => $request -> image,
+            'has_contact' => 1
+        ]);
         
         return response('contact added successfuly', 201);
+    }
+
+    public function storeImage(Request $request)
+    {
+        $user_id = auth()-> id();
+        $request -> validate([
+            'image' => 'required'
+        ]);
+        $pic = $request -> file('image') -> store('users', 'public');
+        return response()->json(['image' => 'http://localhost:8000/storage/'.$pic]);
     }
 
     /**

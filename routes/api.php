@@ -26,6 +26,8 @@ Route::delete('/category/{category}', [CategoryController::class, 'destroy'])->m
 Route::get('/product', [ProductController::class, 'index']);
 Route::get('/product/{product}', [ProductController::class, 'show']);
 Route::post('/product', [ProductController::class, 'store'])->middleware('admin');
+Route::post('/product/upload', [ProductController::class, 'storeImage']);
+// ->middleware('admin');
 Route::put('/product/{product}', [ProductController::class, 'update'])->middleware('admin');
 Route::delete('/product/{product}', [ProductController::class, 'destroy'])->middleware('admin');
 
@@ -44,6 +46,7 @@ Route::post('/review/{product}', [ProductController::class, 'storeReview'])->mid
 
 Route::get('/user/contact/{user}', [UserContactController::class, 'show']);
 Route::post('/user/contact', [UserContactController::class, 'store'])->middleware('auth');
+Route::post('/user/contact/upload', [UserContactController::class, 'storeImage'])->middleware('auth');
 
 // orders
 
