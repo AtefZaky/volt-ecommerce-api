@@ -18,7 +18,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::latest()->filter(request(['category', 'search', 'best_seller']))->paginate(12);
+        $products = Product::latest()->filter(request(['category_id', 'search', 'best_seller']))->paginate(12);
         return response() ->json(['products' => $products]);
     }
     /**

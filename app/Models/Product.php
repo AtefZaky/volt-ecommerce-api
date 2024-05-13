@@ -22,7 +22,7 @@ class Product extends Model
 
     public function scopeFilter($query, array $filters) {
         if($filters['category_id'] ?? false) {
-            $query->where('category_id', request('category'));
+            $query->where('category_id', request('category_id'));
         }
 
         if($filters['search'] ?? false) {
