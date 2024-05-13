@@ -21,7 +21,7 @@ class Product extends Model
     ];
 
     public function scopeFilter($query, array $filters) {
-        if($filters['category'] ?? false) {
+        if($filters['category_id'] ?? false) {
             $query->where('category_id', request('category'));
         }
 
@@ -31,6 +31,9 @@ class Product extends Model
 
         if($filters['best_seller'] ?? false) {
             $query->where('best_seller', request('best_seller'));
+        }
+        if($filters['Limit'] ?? false) {
+            $query->take(request('limit')) -> get();
         }
     }
 
