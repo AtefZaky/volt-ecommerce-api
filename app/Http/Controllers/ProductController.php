@@ -4,12 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Http\Controllers\Controller;
-use App\Models\Cart;
-use App\Models\CartItem;
 use App\Models\ProductReview;
-use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -18,6 +14,8 @@ class ProductController extends Controller
      */
     public function index()
     {
+        // Return the latest products 12 item per page and check if a filter is applied or not 
+
         $products = Product::latest()->filter(request(['category_id', 'search', 'best_seller']))->paginate(12);
         return response() ->json(['products' => $products]);
     }
@@ -59,7 +57,10 @@ class ProductController extends Controller
         $request -> validate([
             'image' => 'required'
         ]);
+
+        // store the product image useing the local method
         $pic = $request -> file('image') -> store('products', 'public');
+        // return the path to the image
         return response()->json(['image' => 'http://localhost:8000/storage/'.$pic]);
     }
     
@@ -91,125 +92,4 @@ class ProductController extends Controller
         $product -> delete();
         return response('product deleted successfuly', 200);
     }
-    /**
-     *  add the product to the cart.
-     */
-    public function addToCart(Product $product, Request $request)
-    {
-        $user_id = auth() -> id();
-        $user = User::find($user_id);
-        $formField = $request ->validate([
-            'quantity' => 'required'
-        ]);
-        $cart = $user -> cart() -> first();
-        if ($cart->cartItems()->get() == []){
-            foreach($cart->cartItems()->get() as $i){
-                if ($i -> product_id == $product->id){
-                    $i -> update([
-                        'cart_id' => $i->cart_id,
-                        'product_id' => $i->product_id,
-                        'quantity' => $i->quantity + request()->quantity,
-                    ]);
-                }
-            }
-        } else{
-            CartItem::create([
-                'cart_id' => $user -> cart() -> first() -> id,
-                'product_id' => $product -> id,
-                'quantity' => request()->quantity,
-            ]);
-        }
-        return response('Item added succssfully', 201);
-        // for ($q = 0; $q < $request -> quantity ; $q++) {
-        //     CartItem::create([
-        //         'cart_id' => $user -> cart() -> first() -> id,
-        //         'product_id' => $product -> id,
-        //         'quantity' => 1,
-        //     ]);
-        // }
-    }
-    /**
-     * 
-     *  remove the product from the cart.
-     */
-    
-    public function removeFromCart(Product $product, Request $request)
-    {
-        $user_id = auth() -> id();
-        $user = User::find($user_id);
-        $formField = $request ->validate([
-            'quantity' => 'required'
-        ]);
-        $cart = $user -> cart() -> first();
-        foreach($cart->cartItems()->get() as $i){
-            if ($i -> product_id == $product->id){
-                if ($i-> quantity == request()->quantity){
-                    $i -> delete();
-                }
-                $i -> update([
-                    'cart_id' => $i->cart_id,
-                    'product_id' => $i->product_id,
-                    'quantity' => $i->quantity - request()->quantity,
-                ]);
-            }
-        }
-        // for ($q = 0; $q < $request -> quantity ; $q++) {
-        //     $cartItem = $user -> cart() -> first() -> cartItems() -> where('product_id', $product -> id) -> first();
-        //     $cartItem -> delete();
-        // }
-        return response('item removed succssfully', 201);
-    }
-    public function deleteFromCart(Product $product, Request $request)
-    {
-        $user_id = auth() -> id();
-        $user = User::find($user_id);
-        $formField = $request ->validate([
-            'quantity' => 'required'
-        ]);
-        $cart = $user -> cart() -> first();
-        foreach($cart->cartItems()->get() as $i){
-            if ($i -> product_id == $product->id){
-                $i -> delete();
-            }
-        }
-        // for ($q = 0; $q < $request -> quantity ; $q++) {
-        //     $cartItem = $user -> cart() -> first() -> cartItems() -> where('product_id', $product -> id) -> first();
-        //     $cartItem -> delete();
-        // }
-        return response('item removed succssfully', 201);
-    }
-
-    // Reviews controllers
-
-    public function indexReviews(Request $request)
-    {
-        $reviews = ProductReview::latest()->skip(0)->take(10)->get();
-        return response() ->json(['reviews' => $reviews]);
-    }
-
-    public function showReviews(Product $product, Request $request)
-    {
-        $product_id = $product -> id;
-        $reviews = ProductReview::latest()->where('product_id', $product_id)->get();
-        return response() ->json(['reviews' => $reviews]);
-    }
-
-    public function storeReview(Product $product, Request $request)
-    {
-        $user_id = auth() -> id();
-        $product_id = $product -> id;
-        $request -> validate([
-            'rating' => 'required',
-            'comment' => 'required',
-        ]);
-        ProductReview::create([
-            'user_id' => $user_id,
-            'product_id' => $product_id,
-            'rating' => $request -> rating,
-            'comment' => $request -> comment
-        ]);
-        return response('comment created successfuly', 201);
-    }
-
-
 }

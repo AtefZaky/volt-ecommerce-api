@@ -20,6 +20,7 @@ class Product extends Model
         'best_seller',
     ];
 
+    // Check for filters and add its query
     public function scopeFilter($query, array $filters) {
         if($filters['category_id'] ?? false) {
             $query->where('category_id', request('category_id'));

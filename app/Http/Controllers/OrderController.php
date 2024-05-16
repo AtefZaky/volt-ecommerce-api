@@ -17,6 +17,8 @@ class OrderController extends Controller
      */
     public function index()
     {
+        // Get latest product 8 in each page
+
         $orders = Order::latest()->paginate(8);
         return response()->json([['orders', $orders]]);
     }
@@ -28,17 +30,25 @@ class OrderController extends Controller
     {
         $user_id = auth() -> id();
         $user = User::find($user_id);
+
+        // Get the user Cart items
         $items = $user ->cart()->first()->cartItems()->get();
+
+        // Get the total price of the order
         $total_price = 0;
         foreach($items as $i){
             $price = Product::where('id', $i -> product_id)->first()->price;
             $total_price = $total_price + $price * $i->quantity;
         }
+
+        // Create the order
         $order = Order::create([
             'user_id' => $user_id,
             'total_price' => $total_price,
             'status' => 'pending'
         ]);
+
+        // Add orders lines and delete them form the cart
         foreach ($user->cart()->first()->cartItems()->get() as $i) {
             OrderLine::create([
                 'order_id' => $order -> id,
@@ -55,16 +65,10 @@ class OrderController extends Controller
      */
     public function show(Order $order)
     {
+        // Return user order data and contact info
+
         $data = [['order', $order] , ['user',$order->user()->first()],['user_contacts',$order->user()->first()->userContact()->first()]];
         return response() -> json($data, 200);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Order $order)
-    {
-        //
     }
 
     /**
@@ -78,13 +82,5 @@ class OrderController extends Controller
             'status' => $request ->status
         ]);
         return response('order updated succssufuly', 201);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Order $order)
-    {
-        //
     }
 }

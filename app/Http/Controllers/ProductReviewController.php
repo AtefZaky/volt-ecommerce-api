@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProductReview;
 use App\Http\Controllers\Controller;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class ProductReviewController extends Controller
@@ -11,56 +12,41 @@ class ProductReviewController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    // Reviews controllers
+
+    public function index(Request $request)
     {
-        //
+        // Get latest 10 reviews
+
+        $reviews = ProductReview::latest()->skip(0)->take(10)->get();
+        return response() ->json(['reviews' => $reviews]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function show(Product $product, Request $request)
     {
-        //
+        // Get reviews in a product
+    
+        $product_id = $product -> id;
+        $reviews = ProductReview::latest()->where('product_id', $product_id)->get();
+        return response() ->json(['reviews' => $reviews]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Product $product, Request $request)
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(ProductReview $productReview)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ProductReview $productReview)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, ProductReview $productReview)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ProductReview $productReview)
-    {
-        //
+        // Add review to a product
+        
+        $user_id = auth() -> id();
+        $product_id = $product -> id;
+        $request -> validate([
+            'rating' => 'required',
+            'comment' => 'required',
+        ]);
+        ProductReview::create([
+            'user_id' => $user_id,
+            'product_id' => $product_id,
+            'rating' => $request -> rating,
+            'comment' => $request -> comment
+        ]);
+        return response('comment created successfuly', 201);
     }
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductReviewController;
 use App\Http\Controllers\StatsController;
 use App\Http\Controllers\UserContactController;
 use App\Models\Product;
@@ -18,7 +19,7 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 // Category routes
 
 Route::get('/category', [CategoryController::class, 'index']);
-Route::post('/category', [CategoryController::class, 'store']);
+Route::post('/category', [CategoryController::class, 'store'])->middleware('admin');
 Route::put('/category/{category}', [CategoryController::class, 'update'])->middleware('admin');
 Route::delete('/category/{category}', [CategoryController::class, 'destroy'])->middleware('admin');
 
@@ -27,25 +28,15 @@ Route::delete('/category/{category}', [CategoryController::class, 'destroy'])->m
 Route::get('/product', [ProductController::class, 'index']);
 Route::get('/product/{product}', [ProductController::class, 'show']);
 Route::post('/product', [ProductController::class, 'store'])->middleware('admin');
-Route::post('/product/upload', [ProductController::class, 'storeImage']);
-// ->middleware('admin');
+Route::post('/product/upload', [ProductController::class, 'storeImage'])->middleware('admin');
 Route::put('/product/{product}', [ProductController::class, 'update'])->middleware('admin');
 Route::delete('/product/{product}', [ProductController::class, 'destroy'])->middleware('admin');
 
-// Add and Remove from cart routes
-
-Route::post('/cart/add/{product}', [ProductController::class, 'addToCart']);
-// ->middleware('auth');
-Route::post('/cart/remove/{product}', [ProductController::class, 'removeFromCart']);
-// ->middleware('auth');
-Route::delete('/cart/delete/{product}', [ProductController::class, 'deleteFromCart']);
-// ->middleware('auth');
-
 // Products reviews
 
-Route::get('/review', [ProductController::class, 'indexReviews']);
-Route::get('/review/{product}', [ProductController::class, 'showReviews']);
-Route::post('/review/{product}', [ProductController::class, 'storeReview'])->middleware('auth');
+Route::get('/review', [ProductReviewController::class, 'index']);
+Route::get('/review/{product}', [ProductReviewController::class, 'show']);
+Route::post('/review/{product}', [ProductReviewController::class, 'store'])->middleware('auth');
 
 // User contacts routes
 
@@ -58,10 +49,18 @@ Route::post('/user/contact/upload', [UserContactController::class, 'storeImage']
 Route::get('/order', [OrderController::class, 'index'])->middleware('admin');
 Route::post('/order', [OrderController::class, 'store'])->middleware('auth');
 Route::get('/order/{order}', [OrderController::class, 'show'])->middleware('admin');
-Route::put('/order/{order}', [OrderController::class, 'update'])->middleware('auth');
+Route::put('/order/{order}', [OrderController::class, 'update'])->middleware('admin');
+
 // cart
 
 Route::get('/cart', [CartController::class, 'index'])->middleware('auth');
 
+// Add and Remove from cart routes
+
+Route::post('/cart/add/{product}', [CartController::class, 'addToCart'])->middleware('auth');
+Route::post('/cart/remove/{product}', [CartController::class, 'removeFromCart'])->middleware('auth');
+Route::delete('/cart/delete/{product}', [CartController::class, 'deleteFromCart'])->middleware('auth');
+
 // stats
+
 Route::get('/stats', [StatsController::class, 'index'])->middleware('admin');
