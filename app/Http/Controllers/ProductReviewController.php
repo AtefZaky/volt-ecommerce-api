@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProductReview;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProductReviewController extends Controller
@@ -36,6 +37,7 @@ class ProductReviewController extends Controller
         // Add review to a product
         
         $user_id = auth() -> id();
+        $user = User::find($user_id);
         $product_id = $product -> id;
         $request -> validate([
             'rating' => 'required',
@@ -43,6 +45,7 @@ class ProductReviewController extends Controller
         ]);
         ProductReview::create([
             'user_id' => $user_id,
+            'customer_name' =>$user->name,
             'product_id' => $product_id,
             'rating' => $request -> rating,
             'comment' => $request -> comment

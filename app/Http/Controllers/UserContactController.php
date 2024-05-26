@@ -59,6 +59,6 @@ class UserContactController extends Controller
     public function show(User $user)
     {
         $contact = $user->userContact()->first();
-        return response() -> json(['contact',$contact]);
+        return response() -> json(['contact'=> $contact]);
     }
 }
