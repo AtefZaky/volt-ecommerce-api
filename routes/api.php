@@ -41,6 +41,8 @@ Route::post('/review/{product}', [ProductReviewController::class, 'store'])->mid
 // User contacts routes
 
 Route::get('/user/contact/{user}', [UserContactController::class, 'show']);
+Route::put('/user/contact/{user}', [UserContactController::class, 'update']);
+//->middleware('auth');
 Route::post('/user/contact', [UserContactController::class, 'store'])->middleware('auth');
 Route::post('/user/contact/upload', [UserContactController::class, 'storeImage'])->middleware('auth');
 

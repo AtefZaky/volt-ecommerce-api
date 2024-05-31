@@ -42,6 +42,21 @@ class UserContactController extends Controller
         
         return response('contact added successfuly', 201);
     }
+    public function update(User $user, Request $request)
+    {
+        $user->userContact()->update([
+            'country' => $request -> country,
+            'city' => $request -> city,
+            'address' => $request -> address,
+            'postal_code' => $request -> postal_code,
+            'phone_number' => $request -> phone_number,
+        ]);
+
+        $user -> update([
+            'image' => $request -> image,
+        ]);
+        return response('contact updated successfuly', 201);
+    }
 
     public function storeImage(Request $request)
     {
